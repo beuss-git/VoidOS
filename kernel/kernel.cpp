@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <test.h>
 
 #if defined(__linux__)
 #error "Not using a cross-compiler!"
@@ -180,12 +181,13 @@ extern "C" {
     void kernel_main()
     {
         terminal_initialize();
-        terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
-        int i = 0;
-        while(true) {
+        terminal_writestring(give_me_string());
+        //terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
+        //int i = 0;
+        //while(true) {
             //terminal_writestring("AAAAAAAAAAAABBBBBB");
-            terminal_putchar((char)(i % 127));
-            i++;
-        }
+            //terminal_putchar((char)(i % 127));
+            //i++;
+        //}
     }
 }
