@@ -84,6 +84,13 @@ void terminal_putentryat(byte c, uint8_t color, size_t x, size_t y)
 
 void terminal_putchar(byte c) 
 {
+    if (c == '\n') {
+        terminal_column = 0;
+        if (++terminal_row == VGA_HEIGHT) {
+            terminal_row = 0;
+        }
+        return;
+    }
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
     if (++terminal_column == VGA_WIDTH) {
         terminal_column = 0;
@@ -109,6 +116,6 @@ extern "C" {
     void kernel_main()
     {
         terminal_initialize();
-        terminal_writestring("Hello, kernel world!\n");
+        terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\n");
     }
 }
