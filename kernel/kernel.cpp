@@ -82,21 +82,85 @@ void terminal_putentryat(byte c, uint8_t color, size_t x, size_t y)
     terminal_buffer[index] = vga_entry(c, color);
 }
 
+void memcpy(void* dst, void* src, size_t num) 
+{
+    char* dest = (char*)dst;
+    const char* source = (const char*)src;
+    while (num) {
+        *(dest++) = *(source++);
+        num--;
+    }
+}
+
+void handle_overflow() 
+{
+    // Move all rows one row up
+    for (size_t row = 0; row < VGA_HEIGHT; ++row) {
+        memcpy(&terminal_buffer[row * VGA_WIDTH],
+               &terminal_buffer[(row + 1) * VGA_WIDTH],
+               VGA_WIDTH * sizeof(uint16_t));
+    }
+
+    // Put empty row
+    for (size_t x = 0; x < VGA_WIDTH; ++x) {
+        const size_t index = VGA_HEIGHT * VGA_WIDTH + x;
+        terminal_buffer[index] = vga_entry(' ', terminal_color);
+    }
+}
+
+void handle_newline() {
+    terminal_column = 0;
+    if (++terminal_row > VGA_HEIGHT)
+    {
+        handle_overflow();
+    }
+}
+template <typename T>
+T clamp(T value, T min, T max) 
+{
+    if (value < min) {
+        return min;
+    }
+    if (value > max) {
+        return max;
+    }
+    return value;
+}
+
+template <typename T>
+T max(T a, T b) {
+    return a > b ? a : b;
+}
+
+template <typename T>
+T min(T a, T b) {
+    return a < b ? a : b;
+}
+
+uint64_t sleep(uint64_t iterations) {
+    uint64_t count = 0;
+    for (uint64_t i = 0; i < iterations; i++) {
+        if (i > iterations) {
+            count = 0;
+        }
+        count++;
+    }
+    return count;
+}
+
 void terminal_putchar(byte c) 
 {
+
+    volatile uint64_t its = 100000;
+        //terminal_putchar((byte)sleep(its));
+    (void)sleep(its);
     if (c == '\n') {
-        terminal_column = 0;
-        if (++terminal_row == VGA_HEIGHT) {
-            terminal_row = 0;
-        }
+        handle_newline();
         return;
     }
-    terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+    terminal_putentryat(c, terminal_color, terminal_column, min<size_t>(terminal_row, VGA_HEIGHT));
     if (++terminal_column == VGA_WIDTH) {
-        terminal_column = 0;
-        if (++terminal_row == VGA_HEIGHT) {
-            terminal_row = 0;
-        }
+        handle_newline();
     }
 }
 
@@ -116,6 +180,12 @@ extern "C" {
     void kernel_main()
     {
         terminal_initialize();
-        terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\n");
+        terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
+        int i = 0;
+        while(true) {
+            //terminal_writestring("AAAAAAAAAAAABBBBBB");
+            terminal_putchar((char)(i % 127));
+            i++;
+        }
     }
 }
