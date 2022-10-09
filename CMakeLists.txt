@@ -13,8 +13,8 @@ set(CMAKE_ASM_COMPILER ${TOOLS}/bin/i686-voidos-as)
 
 #set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti")
-set(CMAKE_C_FLAGS "-ffreestanding -O2 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-ffreestanding -O0 -Wall -Wextra -fno-exceptions -fno-rtti")
+set(CMAKE_C_FLAGS "-ffreestanding -O0 -Wall -Wextra")
 
 set(KERNEL_BIN "voidos.bin")
 set(KERNEL_ISO ${PROJECT_NAME}.iso)
@@ -30,7 +30,9 @@ set(arch i386)
 add_executable(${KERNEL_BIN} 
     kernel/${arch}/boot.s 
     kernel/kernel.cpp
+    kernel/TTY/TTY.cpp
 )
+target_include_directories(${KERNEL_BIN} PUBLIC ${CMAKE_SOURCE_DIR})
 target_compile_features(${KERNEL_BIN} PUBLIC cxx_std_20 c_std_11)
 target_link_libraries(${KERNEL_BIN} PRIVATE testlib)
 set_target_properties(${KERNEL_BIN} PROPERTIES LINK_FLAGS "-T ${CMAKE_SOURCE_DIR}/kernel/${arch}/linker.ld -ffreestanding -O2 -nostdlib -lgcc")

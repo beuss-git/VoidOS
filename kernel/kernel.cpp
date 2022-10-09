@@ -1,7 +1,8 @@
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <test.h>
+#include <stdlib.h>
+#include <kernel/TTY/TTY.h>
 
 #if defined(__linux__)
 #error "Not using a cross-compiler!"
@@ -15,111 +16,16 @@
 #error "This needs a custom toolchain!"
 #endif
 
-enum VGAColor : uint8_t {
-	VGA_COLOR_BLACK = 0,
-	VGA_COLOR_BLUE = 1,
-	VGA_COLOR_GREEN = 2,
-	VGA_COLOR_CYAN = 3,
-	VGA_COLOR_RED = 4,
-	VGA_COLOR_MAGENTA = 5,
-	VGA_COLOR_BROWN = 6,
-	VGA_COLOR_LIGHT_GREY = 7,
-	VGA_COLOR_DARK_GREY = 8,
-	VGA_COLOR_LIGHT_BLUE = 9,
-	VGA_COLOR_LIGHT_GREEN = 10,
-	VGA_COLOR_LIGHT_CYAN = 11,
-	VGA_COLOR_LIGHT_RED = 12,
-	VGA_COLOR_LIGHT_MAGENTA = 13,
-	VGA_COLOR_LIGHT_BROWN = 14,
-	VGA_COLOR_WHITE = 15,
-};
 
-uint8_t vga_entry_color(VGAColor fg, VGAColor bg) 
-{
-    return fg | bg << 4;
-}
 
-using byte = unsigned char;
-uint16_t vga_entry(byte uc, uint8_t color) 
-{
-    return static_cast<uint16_t>(uc) | static_cast<uint16_t>(color) << 8;
-}
-
-size_t strlen(const char* str) 
-{
-    size_t len = 0;
-    while (str[len]) {
-        len++;
-    }
-    return len;
-}
-
-static constexpr size_t VGA_WIDTH = 80;
-static constexpr size_t VGA_HEIGHT = 25;
 
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
-void terminal_initialize() 
-{
-    terminal_row = 0;
-    terminal_column = 0;
-    terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-    terminal_buffer = (uint16_t*)0xB8000;
-    for (size_t y = 0; y < VGA_HEIGHT; ++y) {
-        for (size_t x = 0; x < VGA_WIDTH; ++x) {
-            const size_t index = y * VGA_WIDTH + x;
-            terminal_buffer[index] = vga_entry(' ', terminal_color);
-        }
-    }
-}
 
-void terminal_setcolor(uint8_t color) 
-{
-    terminal_color = color;
-}
 
-void terminal_putentryat(byte c, uint8_t color, size_t x, size_t y)
-{
-    const size_t index = y * VGA_WIDTH + x;
-    terminal_buffer[index] = vga_entry(c, color);
-}
-
-void memcpy(void* dst, void* src, size_t num) 
-{
-    char* dest = (char*)dst;
-    const char* source = (const char*)src;
-    while (num) {
-        *(dest++) = *(source++);
-        num--;
-    }
-}
-
-void handle_overflow() 
-{
-    // Move all rows one row up
-    for (size_t row = 0; row < VGA_HEIGHT; ++row) {
-        memcpy(&terminal_buffer[row * VGA_WIDTH],
-               &terminal_buffer[(row + 1) * VGA_WIDTH],
-               VGA_WIDTH * sizeof(uint16_t));
-    }
-
-    // Put empty row
-    for (size_t x = 0; x < VGA_WIDTH; ++x) {
-        const size_t index = VGA_HEIGHT * VGA_WIDTH + x;
-        terminal_buffer[index] = vga_entry(' ', terminal_color);
-    }
-}
-
-void handle_newline() {
-    terminal_column = 0;
-    if (++terminal_row > VGA_HEIGHT)
-    {
-        handle_overflow();
-    }
-}
 template <typename T>
 T clamp(T value, T min, T max) 
 {
@@ -137,10 +43,7 @@ T max(T a, T b) {
     return a > b ? a : b;
 }
 
-template <typename T>
-T min(T a, T b) {
-    return a < b ? a : b;
-}
+
 
 uint64_t sleep(uint64_t iterations) {
     uint64_t count = 0;
@@ -153,68 +56,88 @@ uint64_t sleep(uint64_t iterations) {
     return count;
 }
 
-void terminal_putchar(byte c) 
-{
 
-    volatile uint64_t its = 10000000;
-        //terminal_putchar((byte)sleep(its));
-    (void)sleep(its);
-    if (c == '\n') {
-        handle_newline();
-        return;
+
+
+uint8_t inb(uint16_t port)
+{
+    uint8_t ret;
+    asm volatile ( "inb %1, %0"
+                   : "=a"(ret)
+                   : "Nd"(port) );
+    return ret;
+}
+
+void outb(uint16_t port, uint8_t value)
+{
+    asm volatile ("outb %%al,%%dx": :"d" (port), "a" (value));
+}
+static constexpr auto PORT = 0x3f8; // COM1
+bool init_serial()
+{
+    outb(PORT + 1, 0x00);    // Disable all interrupts
+    outb(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+    outb(PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+    outb(PORT + 1, 0x00);    //                  (hi byte)
+    outb(PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
+    outb(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+    outb(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    outb(PORT + 4, 0x1E);    // Set in loopback mode, test the serial chip
+    outb(PORT + 0, 0xAE);    // Test serial chip (send byte 0xAE and check if serial returns same byte)
+
+    // Check if serial is faulty (i.e: not same byte as sent)
+    if(inb(PORT + 0) != 0xAE) {
+        return false;
     }
-    terminal_putentryat(c, terminal_color, terminal_column, min<size_t>(terminal_row, VGA_HEIGHT));
-    if (++terminal_column == VGA_WIDTH) {
-        handle_newline();
+
+    // If serial is not faulty set it in normal operation mode
+    // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
+    outb(PORT + 4, 0x0F);
+    return true;
+}
+
+bool is_transmit_empty()
+{
+    return inb(PORT + 5) & 0x20;
+}
+
+/*
+void write_serial(char a)
+{
+    while (!is_transmit_empty());
+
+    outb(PORT, a);
+}
+
+void write_serial_string(const char* data)
+{
+    for (size_t i = 0; i < strlen(data); ++i) {
+        write_serial(data[i]);
     }
 }
 
-void terminal_write(const char* data, size_t size) 
-{
-    for (size_t i = 0; i < size; ++i) {
-        terminal_putchar(data[i]);
-    }
-}
-
-void terminal_writestring(const char* data)
-{
-    terminal_write(data, strlen(data));
-}
-
-
-static constexpr int32_t MAX_DIGITS = 255;
-void terminal_write_rev(const char* buffer, size_t len)
-{
-    while (len) {
-        terminal_putchar(buffer[--len]);
-    }
-}
-void terminal_writenum(uint32_t num)
-{
-    size_t len = 0;
-    char buf[MAX_DIGITS]{};
-    do {
-        const auto digit = (char)(num % 10);
-        buf[len++] = digit + '0';
-        num /= 10;
-    } while (num);
-
-    terminal_write_rev(buf, len);
-}
-
+*/
 extern "C" {
 [[maybe_unused]] void kernel_main()
-    {
-        terminal_initialize();
-        terminal_writestring(give_me_string());
-        //terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
-        uint32_t i = 0;
-        while(true) {
-            //terminal_writestring("AAAAAAAAAAAABBBBBB");
-            //terminal_putchar((char)(i % 127));
-            terminal_writenum(i);
-            terminal_putchar(' ');
-            i++;
-        }
+{
+    if (!init_serial()) {
+        return;
     }
+    //write_serial_string("\033[1;31mbold red text\033[0m\n");
+//for(;;)
+    //asm("hlt");
+    Kernel::TTY tty;
+    tty.write_string("This is a test string!");
+    //terminal_initialize();
+    //terminal_writestring(give_me_string());
+    //terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
+    uint32_t i = 0;
+    while(true) {
+        //write_serial_string("hellon\n");
+        //terminal_putchar((char)(i % 127));
+        //terminal_writenum(i);
+        //terminal_putchar(' ');
+        i++;
+    }
+}
 }
