@@ -1,8 +1,7 @@
 #!/bin/bash
 
-output_dir='bin'
-
 mkdir -p isodir/boot/grub
-cp ${output_dir}/voidos.bin isodir/boot/voidos.bin
+cp voidos.bin isodir/boot/voidos.bin
 cp ../configs/grub.cfg isodir/boot/grub/grub.cfg
 grub-mkrescue -o voidos.iso isodir
+rm -rf isodir

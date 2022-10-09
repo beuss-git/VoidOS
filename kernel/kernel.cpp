@@ -11,6 +11,10 @@
 #error "This needs to be compiled with a ix86-elf compiler!"
 #endif
 
+#if !defined(__voidos__)
+#error "This needs a custom toolchain!"
+#endif
+
 enum VGAColor : uint8_t {
 	VGA_COLOR_BLACK = 0,
 	VGA_COLOR_BLUE = 1,

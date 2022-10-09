@@ -3,3 +3,6 @@ isodir/
 */Toolchain/Tarballs
 */Toolchain/
 sysroot/
+build/
+.idea/
+cmake-build-debug/

@@ -1,6 +1,16 @@
 #!/bin/bash
 
-/bin/bash ./compile.sh
+cd "$(dirname "$0")" && cd ..
+
+scripts/compile.sh
+
+# Verify grub image
+if grub-file --is-x86-multiboot bin/voidos.bin; then
+    echo multiboot confirmed
+else
+    echo the file is not multiboot
+fi
+
 qemu-system-i386.exe -kernel bin/voidos.bin
 
 
