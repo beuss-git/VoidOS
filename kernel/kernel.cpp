@@ -156,7 +156,7 @@ uint64_t sleep(uint64_t iterations) {
 void terminal_putchar(byte c) 
 {
 
-    volatile uint64_t its = 100000;
+    volatile uint64_t its = 10000000;
         //terminal_putchar((byte)sleep(its));
     (void)sleep(its);
     if (c == '\n') {
@@ -181,17 +181,40 @@ void terminal_writestring(const char* data)
     terminal_write(data, strlen(data));
 }
 
+
+static constexpr int32_t MAX_DIGITS = 255;
+void terminal_write_rev(const char* buffer, size_t len)
+{
+    while (len) {
+        terminal_putchar(buffer[--len]);
+    }
+}
+void terminal_writenum(uint32_t num)
+{
+    size_t len = 0;
+    char buf[MAX_DIGITS]{};
+    do {
+        const auto digit = (char)(num % 10);
+        buf[len++] = digit + '0';
+        num /= 10;
+    } while (num);
+
+    terminal_write_rev(buf, len);
+}
+
 extern "C" {
-    void kernel_main()
+[[maybe_unused]] void kernel_main()
     {
         terminal_initialize();
         terminal_writestring(give_me_string());
         //terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
-        //int i = 0;
-        //while(true) {
+        uint32_t i = 0;
+        while(true) {
             //terminal_writestring("AAAAAAAAAAAABBBBBB");
             //terminal_putchar((char)(i % 127));
-            //i++;
-        //}
+            terminal_writenum(i);
+            terminal_putchar(' ');
+            i++;
+        }
     }
 }
