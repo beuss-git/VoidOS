@@ -76,14 +76,24 @@ extern "C" {
     //asm("hlt");
     Kernel::TTY tty;
     tty.initialize();
-    tty.write_string("This is a test string!");
-    serial.write_string("This is a test!");
+    //tty.write_string("This is a test string!");
+    //serial.write_string("This is a test!");
+
+    serial.write_string("value at nullptr: ");
+
+    *(int*)nullptr = 0xDEADBEEF;
+    serial.write_hex(*(int*)nullptr);
+    /*
+    volatile int value = (int)nullptr;
+    *(int*)value = 123;
+    serial.write_num(*(int*)value);
+     */
     //terminal_initialize();
     //terminal_writestring(give_me_string());
     //terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
     uint32_t i = 0;
     //while(true) {
-        //write_serial_string("hellon\n");
+        //write_seral_string("hellon\n");
         //terminal_putchar((char)(i % 127));
         //terminal_writenum(i);
         //terminal_putchar(' ');
