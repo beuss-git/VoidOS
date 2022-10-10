@@ -30,6 +30,7 @@ set(arch i386)
 add_executable(${KERNEL_BIN} 
     kernel/${arch}/boot.s 
     kernel/kernel.cpp
+    kernel/Devices/SerialDevice.cpp
     kernel/TTY/TTY.cpp
 )
 target_include_directories(${KERNEL_BIN} PUBLIC ${CMAKE_SOURCE_DIR})
