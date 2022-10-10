@@ -84,13 +84,13 @@ namespace Kernel {
         write(data, strlen(data));
     }
 
-    void TTY::terminal_write_rev(const char *buffer, size_t len) {
+    void TTY::write_rev(const char *buffer, size_t len) {
         while (len) {
             putchar(buffer[--len]);
         }
     }
 
-    void TTY::terminal_writenum(uint32_t num) {
+    void TTY::write_num(uint32_t num) {
         size_t len = 0;
         char buf[MAX_DIGITS]{};
         do {
@@ -99,7 +99,7 @@ namespace Kernel {
             num /= 10;
         } while (num);
 
-        terminal_write_rev(buf, len);
+        write_rev(buf, len);
     }
 
 }

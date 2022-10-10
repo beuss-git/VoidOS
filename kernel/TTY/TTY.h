@@ -32,10 +32,10 @@ namespace Kernel {
 
         void write(const char* data, size_t size);
         void write_string(const char* data);
-        void terminal_writenum(uint32_t num);
+        void write_num(uint32_t num);
         void set_color(VGAColor color) { m_color = color; }
     private:
-        void terminal_write_rev(const char* buffer, size_t len);
+        void write_rev(const char* buffer, size_t len);
 
         void handle_overflow();
 

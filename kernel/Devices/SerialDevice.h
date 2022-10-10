@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stddef.h>
 
 namespace Kernel {
     enum COMPort : uint16_t {
@@ -67,6 +68,9 @@ namespace Kernel {
 
         void write_string(const char* data);
 
+        void write_num(uint32_t num);
+
+        void write_hex(uint32_t num);
     private:
         void set_interrupts(bool enabled);
         void set_baud(BaudRate rate);
@@ -95,7 +99,10 @@ namespace Kernel {
             return inb(m_port + reg);
         }
 
+        void write_rev(const char* buffer, size_t len);
     private:
+        static constexpr size_t MAX_DIGITS = 255;
+
         COMPort m_port = COM1;
     };
 }

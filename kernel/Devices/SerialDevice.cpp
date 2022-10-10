@@ -77,4 +77,37 @@ namespace Kernel {
         }
     }
 
+    void SerialDevice::write_hex(uint32_t num) {
+        char buf[MAX_DIGITS]{};
+        size_t len = 0;
+        while (num > 0) {
+            const auto rem = num % 16;
+            if (rem < 10) {
+                buf[len++] = (char)(rem + '0');
+            } else {
+                buf[len++] = (char)(rem - 10 + 'A');
+            }
+            num /= 16;
+        }
+
+        write_rev(buf, len);
+    }
+    void SerialDevice::write_num(uint32_t num) {
+        size_t len = 0;
+        char buf[MAX_DIGITS]{};
+        do {
+            const char digit = (char)(num % 10);
+            buf[len++] = (char)(digit + '0');
+            num /= 10;
+        } while (num);
+
+        write_rev(buf, len);
+    }
+
+    void SerialDevice::write_rev(const char *buffer, size_t len) {
+        while (len) {
+            write(buffer[--len]);
+        }
+    }
+
 }
