@@ -26,8 +26,9 @@ namespace Kernel {
     };
     class TTY {
     public:
-        TTY();
-        ~TTY();
+        TTY() = default;
+
+        void initialize();
 
         void write(const char* data, size_t size);
         void write_string(const char* data);
