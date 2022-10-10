@@ -1,30 +1,6 @@
 #include "TTY.h"
-//#include <sys/types.h>
-
-
-// TODO: move these
-size_t strlen(const char* str)
-{
-    size_t len = 0;
-    while (str[len]) {
-        len++;
-    }
-    return len;
-}
-void memcpy(void* dst, void* src, size_t num)
-{
-    char* dest = (char*)dst;
-    const char* source = (const char*)src;
-    while (num) {
-        *(dest++) = *(source++);
-        num--;
-    }
-}
-
-template <typename T>
-T min(T a, T b) {
-    return a < b ? a : b;
-}
+#include <sys/types.h>
+#include <Shared/Utils.h>
 
 namespace Kernel {
     void TTY::initialize() {

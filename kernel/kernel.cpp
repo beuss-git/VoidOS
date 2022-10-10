@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <kernel/TTY/TTY.h>
 #include <kernel/Devices/SerialDevice.h>
+#include <sys/types.h>
 
 #if defined(__linux__)
 #error "Not using a cross-compiler!"
@@ -17,35 +18,6 @@
 #error "This needs a custom toolchain!"
 #endif
 
-
-
-
-size_t terminal_row;
-size_t terminal_column;
-uint8_t terminal_color;
-uint16_t* terminal_buffer;
-
-
-
-template <typename T>
-T clamp(T value, T min, T max) 
-{
-    if (value < min) {
-        return min;
-    }
-    if (value > max) {
-        return max;
-    }
-    return value;
-}
-
-template <typename T>
-T max(T a, T b) {
-    return a > b ? a : b;
-}
-
-
-
 uint64_t sleep(uint64_t iterations) {
     uint64_t count = 0;
     for (uint64_t i = 0; i < iterations; i++) {
@@ -57,13 +29,6 @@ uint64_t sleep(uint64_t iterations) {
     return count;
 }
 
-
-
-
-
-/*
-
-*/
 extern "C" {
 [[maybe_unused]] void kernel_main()
 {
@@ -78,6 +43,7 @@ extern "C" {
     tty.initialize();
     //tty.write_string("This is a test string!");
     //serial.write_string("This is a test!");
+    memcpy(nullptr, nullptr, 0);
 
     serial.write_string("value at nullptr: ");
 
@@ -91,7 +57,7 @@ extern "C" {
     //terminal_initialize();
     //terminal_writestring(give_me_string());
     //terminal_writestring("Hello, kernel world!\nThis is a multiline message!\n This should appear on the next line!\nAnd this is a really really really long line that should overflow the columns and go on to a new line automatically or something");
-    uint32_t i = 0;
+    //uint32_t i = 0;
     //while(true) {
         //write_seral_string("hellon\n");
         //terminal_putchar((char)(i % 127));

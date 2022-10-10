@@ -1,8 +1,8 @@
 #include <kernel/Devices/SerialDevice.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 namespace Kernel {
-
     static constexpr uint8_t DATA_REGISTER = 0;
     static constexpr uint8_t INTERRUPT_ENABLE_REGISTER = 1;
     static constexpr uint8_t FIFO_CONTROL_REGISTER = 2;
@@ -11,8 +11,6 @@ namespace Kernel {
     static constexpr uint8_t LINE_STATUS_REGISTER = 5;
     static constexpr uint8_t MODEM_STATUS_REGISTER = 6;
     static constexpr uint8_t SCRATCH_REGISTER = 7;
-
-
 
     void SerialDevice::set_interrupts(bool enabled){
         write_reg(INTERRUPT_ENABLE_REGISTER, enabled);
@@ -60,15 +58,6 @@ namespace Kernel {
         while (!is_transmit_empty());
 
         write_reg(DATA_REGISTER, a);
-    }
-
-    size_t strlen(const char* str)
-    {
-        size_t len = 0;
-        while (str[len]) {
-            len++;
-        }
-        return len;
     }
 
     void SerialDevice::write_string(const char *data) {
