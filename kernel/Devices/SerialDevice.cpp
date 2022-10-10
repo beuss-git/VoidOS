@@ -61,15 +61,16 @@ namespace Kernel {
     }
 
     void SerialDevice::write_string(const char *data) {
-        for (size_t i = 0; i < strlen(data); ++i) {
-            write(data[i]);
-        }
+        ColorWriter writer(*this, m_color);
+        write_data(data, strlen(data));
     }
 
     void SerialDevice::write_hex(uint32_t num) {
-        char buf[MAX_DIGITS]{};
+        ColorWriter writer(*this, m_color);
+
         size_t len = 0;
-        while (num > 0) {
+        char buf[MAX_DIGITS]{};
+        do {
             const auto rem = num % 16;
             if (rem < 10) {
                 buf[len++] = (char)(rem + '0');
@@ -77,11 +78,13 @@ namespace Kernel {
                 buf[len++] = (char)(rem - 10 + 'A');
             }
             num /= 16;
-        }
+        } while (num > 0);
 
         write_rev(buf, len);
     }
     void SerialDevice::write_num(uint32_t num) {
+        ColorWriter writer(*this, m_color);
+
         size_t len = 0;
         char buf[MAX_DIGITS]{};
         do {
@@ -93,10 +96,19 @@ namespace Kernel {
         write_rev(buf, len);
     }
 
-    void SerialDevice::write_rev(const char *buffer, size_t len) {
+    void SerialDevice::write_rev(const char* buffer, size_t len) {
         while (len) {
             write(buffer[--len]);
         }
     }
 
+    void SerialDevice::set_color(Shared::Bash::BashColor color) {
+        m_color = color;
+    }
+
+    void SerialDevice::write_data(const char* data, size_t len) {
+        for (size_t i = 0; i < len; ++i) {
+            write(data[i]);
+        }
+    }
 }

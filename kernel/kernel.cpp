@@ -1,5 +1,6 @@
 #include <kernel/TTY/TTY.h>
 #include <kernel/Devices/SerialDevice.h>
+#include <kernel/Devices/PS2KeyboardDevice.h>
 #include <sys/types.h>
 #include <Shared/StringView.h>
 
@@ -15,17 +16,6 @@
 #error "This needs a custom toolchain!"
 #endif
 
-uint64_t sleep(uint64_t iterations) {
-    uint64_t count = 0;
-    for (uint64_t i = 0; i < iterations; i++) {
-        if (i > iterations) {
-            count = 0;
-        }
-        count++;
-    }
-    return count;
-}
-
 extern "C" {
 [[maybe_unused]] void kernel_main() {
     Kernel::SerialDevice serial;
@@ -36,11 +26,22 @@ extern "C" {
     tty.initialize();
 
     const StringView welcome_message {R"(
-************************************************************
-*                    Welcome to Void OS!                   *
-************************************************************
+*************************************************************
+*                    Welcome to Void OS!                    *
+*************************************************************
 )"};
+    tty.set_color(Kernel::VGAColor::VGA_COLOR_LIGHT_BLUE);
     tty.write_string(welcome_message.data());
+    serial.set_color(Shared::Bash::Color::LightBlue);
     serial.write_string(welcome_message.data());
+
+    serial.set_color(Shared::Bash::Color::Red);
+    serial.write_string("This message should be red\n");
+
+    serial.set_color(Shared::Bash::Color::Green);
+    serial.write_string("This message should be green\n");
+
+    serial.set_color(Shared::Bash::Color::Magenta);
+    serial.write_string("This message should be magenta\n");
 }
 }
