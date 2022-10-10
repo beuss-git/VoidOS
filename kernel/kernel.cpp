@@ -1,8 +1,8 @@
-#include <kernel/TTY/TTY.h>
-#include <kernel/Devices/SerialDevice.h>
+#include "kernel/TTY/TTY.hpp"
+#include <kernel/Devices/SerialDevice.hpp>
 #include <kernel/Devices/PS2KeyboardDevice.h>
 #include <sys/types.h>
-#include <Shared/StringView.h>
+#include <Shared/StringView.hpp>
 
 #if defined(__linux__)
 #error "Not using a cross-compiler!"

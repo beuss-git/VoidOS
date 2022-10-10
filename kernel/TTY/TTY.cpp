@@ -1,6 +1,6 @@
-#include "TTY.h"
+#include "TTY.hpp"
 #include <sys/types.h>
-#include <Shared/Utils.h>
+#include <Shared/Utils.hpp>
 
 namespace Kernel {
     void TTY::initialize() {
