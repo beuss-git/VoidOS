@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include "Shared/Bash.h"
+#include "Shared/Bash.hpp"
+#include <kernel/IO.hpp>
 
 namespace Kernel {
     enum COMPort : uint16_t {
@@ -65,6 +66,7 @@ namespace Kernel {
         bool initialize(COMPort port, BaudRate rate);
 
 
+        void write_char(char c);
         void write_string(const char* data);
 
         void write_num(uint32_t num);
@@ -78,25 +80,15 @@ namespace Kernel {
         void set_line_control(DataBits data_bits, StopBits stop_bits, Parity parity);
         //void set_fifo_control()
 
-        uint8_t inb(uint16_t port) {
-            uint8_t ret;
-            asm volatile ( "inb %1, %0"
-                    : "=a"(ret)
-                    : "Nd"(port) );
-            return ret;
-        }
-        void outb(uint16_t port, uint8_t value) {
-            asm volatile ("outb %%al,%%dx": :"d" (port), "a" (value));
-        }
         bool is_transmit_empty() {
-            return inb(m_port + 5) & 0x20;
+            return IO::inb(m_port + 5) & 0x20;
         }
         void write_reg(uint8_t reg, uint8_t value) {
-            outb(m_port + reg, value);
+            IO::outb(m_port + reg, value);
         }
 
         uint8_t read_reg(uint8_t reg) {
-            return inb(m_port + reg);
+            return IO::inb(m_port + reg);
         }
 
         void write_rev(const char* buffer, size_t len);
@@ -135,4 +127,5 @@ namespace Kernel {
 
         Shared::Bash::BashColor m_color = Shared::Bash::Color::Default;
     };
+    extern SerialDevice* g_serial_device;
 }

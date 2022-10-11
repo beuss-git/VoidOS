@@ -50,6 +50,10 @@ namespace Kernel {
         }
     }
 
+    void TTY::write_char(char c) {
+        putchar(c);
+    }
+
     void TTY::write(const char *data, size_t size) {
         for (size_t i = 0; i < size; ++i) {
             putchar(data[i]);
@@ -77,5 +81,6 @@ namespace Kernel {
 
         write_rev(buf, len);
     }
+
 
 }

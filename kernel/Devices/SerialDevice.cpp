@@ -1,4 +1,4 @@
-#include <kernel/Devices/SerialDevice.h>
+#include <kernel/Devices/SerialDevice.hpp>
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -29,14 +29,12 @@ namespace Kernel {
         write_reg(LINE_CONTROL_REGISTER, (uint8_t)data_bits | (uint8_t)stop_bits | (uint8_t)parity);    // Enable DLAB (allow access to baud rate divisor)
     }
 
-
     // https://wiki.osdev.org/Serial_Ports
     bool SerialDevice::initialize(COMPort port, BaudRate baud) {
         m_port = port;
         set_interrupts(false);
         set_baud(baud);
         set_line_control(DataBits::EIGHT, StopBits::ONE, Parity::NONE);
-        //outb(m_port + 3, 0x03);    // 8 bits, no parity, one stop bit
 
         write_reg(FIFO_CONTROL_REGISTER, 0xC7);        // Enable FIFO, clear them, with 14-byte threshold
         write_reg(MODEM_CONTROL_REGISTER, 0x0B);       // IRQs enabled, RTS/DSR set
@@ -44,7 +42,7 @@ namespace Kernel {
         write_reg(DATA_REGISTER, 0xAE);                // Test serial chip (send byte 0xAE and check if serial returns same byte)
 
         // Check if serial is faulty (i.e: not same byte as sent)
-        if (inb(port + DATA_REGISTER) != 0xAE) {
+        if (IO::inb(port + DATA_REGISTER) != 0xAE) {
             return false;
         }
 
@@ -111,4 +109,10 @@ namespace Kernel {
             write(data[i]);
         }
     }
+
+    void SerialDevice::write_char(const char c) {
+        write(c);
+    }
+
+    SerialDevice* g_serial_device = nullptr;
 }

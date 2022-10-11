@@ -30,6 +30,7 @@ namespace Kernel {
 
         void initialize();
 
+        void write_char(char c);
         void write(const char* data, size_t size);
         void write_string(const char* data);
         void write_num(uint32_t num);

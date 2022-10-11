@@ -37,6 +37,7 @@ set(SHARED_SOURCES
 add_executable(${KERNEL_BIN} 
     kernel/${arch}/boot.s 
     kernel/kernel.cpp
+    kernel/Devices/PS2KeyboardDevice.cpp
     kernel/Devices/SerialDevice.cpp
     kernel/TTY/TTY.cpp
     ${SHARED_SOURCES}
@@ -58,6 +59,7 @@ add_custom_target(${KERNEL_ISO}
     COMMENT "Generating kernel iso file"
     BYPRODUCTS ${KERNEL_ISO}
 )
+
 add_dependencies(${KERNEL_ISO} ${KERNEL_BIN})
 #add_dependencies(voidos.iso voidos.bin)
 add_custom_command(TARGET ${KERNEL_ISO} POST_BUILD

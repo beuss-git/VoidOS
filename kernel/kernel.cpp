@@ -1,6 +1,6 @@
 #include "kernel/TTY/TTY.hpp"
 #include <kernel/Devices/SerialDevice.hpp>
-#include <kernel/Devices/PS2KeyboardDevice.h>
+#include <kernel/Devices/PS2KeyboardDevice.hpp>
 #include <sys/types.h>
 #include <Shared/StringView.hpp>
 
@@ -19,6 +19,7 @@
 extern "C" {
 [[maybe_unused]] void kernel_main() {
     Kernel::SerialDevice serial;
+    Kernel::g_serial_device = &serial;
     if (!serial.initialize(Kernel::COM1, Kernel::BaudRate::BPS_115200)) {
         return;
     }
@@ -43,5 +44,19 @@ extern "C" {
 
     serial.set_color(Shared::Bash::Color::Magenta);
     serial.write_string("This message should be magenta\n");
+
+    serial.set_color(Shared::Bash::Color::Default);
+    Kernel::PS2KeyboardDevice keyboard;
+    keyboard.initialize();
+
+    while (true) {
+        const auto kb_char = keyboard.read_data();
+        if (kb_char == (uint8_t)-1 || kb_char == 0) {
+            continue;
+        }
+
+        serial.write_char((char)kb_char);
+        tty.write_char((char)kb_char);
+    }
 }
 }
