@@ -14,11 +14,7 @@ namespace Kernel {
 
     void TTY::handle_overflow() {
         // Move all rows one row up
-        for (size_t row = 0; row < VGA_HEIGHT; ++row) {
-            memcpy(&m_buffer[row * VGA_WIDTH],
-                   &m_buffer[(row + 1) * VGA_WIDTH],
-                   VGA_WIDTH * sizeof(uint16_t));
-        }
+        memcpy(m_buffer, &m_buffer[VGA_WIDTH], VGA_WIDTH * VGA_HEIGHT * sizeof(uint16_t));
 
         // Put empty row
         for (size_t x = 0; x < VGA_WIDTH; ++x) {
@@ -27,11 +23,9 @@ namespace Kernel {
         }
     }
 
-    void TTY::handle_newline()
-    {
+    void TTY::handle_newline() {
         m_column = 0;
-        if (++m_row > VGA_HEIGHT)
-        {
+        if (++m_row > VGA_HEIGHT) {
             handle_overflow();
         }
     }
