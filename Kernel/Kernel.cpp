@@ -1,6 +1,6 @@
-#include "kernel/TTY/TTY.hpp"
-#include <kernel/Devices/SerialDevice.hpp>
-#include <kernel/Devices/PS2KeyboardDevice.hpp>
+#include <Kernel/TTY/TTY.hpp>
+#include <Kernel/Devices/SerialDevice.hpp>
+#include <Kernel/Devices/PS2KeyboardDevice.hpp>
 #include <sys/types.h>
 #include <Shared/StringView.hpp>
 

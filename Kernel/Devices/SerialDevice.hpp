@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include "Shared/Bash.hpp"
-#include <kernel/IO.hpp>
+#include <Shared/Bash.hpp>
+#include <Kernel/IO.hpp>
 
 namespace Kernel {
     enum COMPort : uint16_t {
